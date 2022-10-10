@@ -15,13 +15,14 @@ import com.example.bemberexchange.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    public RequestQueueManager requestQueueManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestQueueManager = new RequestQueueManager(this);
+        RequestQueueManager requestQueueManager = RequestQueueManager.getInstance(this);
+
+
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());

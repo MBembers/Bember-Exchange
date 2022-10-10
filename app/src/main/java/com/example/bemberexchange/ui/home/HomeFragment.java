@@ -21,6 +21,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.bemberexchange.RequestQueueManager;
 import com.example.bemberexchange.databinding.FragmentHomeBinding;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class HomeFragment extends Fragment {
@@ -35,7 +36,12 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-
+        binding.btnTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getCurrencies();
+            }
+        });
         return root;
     }
 
@@ -46,15 +52,18 @@ public class HomeFragment extends Fragment {
     }
 
     private void getCurrencies(){
-        RequestQueue queue = Volley.newRequestQueue(getActivity());
-        String url = "http://my-json-feed";
-
+        String url = "https://api.exchangerate.host/symbols";
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("XXX", "onResponse: " + response.toString().substring(0, 500));;
+                        try {
+                            JSONObject symbols = response.getJSONObject("symbols");
+                            Log.d("XXX", "onResponse: " + symbols.toString().substring(0, 500));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -63,8 +72,6 @@ public class HomeFragment extends Fragment {
 
                     }
                 });
-
-// Access the RequestQueue through your singleton class.
-//        getActivity()
+        RequestQueueManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
     }
 }
