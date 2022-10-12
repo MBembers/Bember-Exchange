@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp">
+
+    <ImageView
+        android:id="@+id/list_flag"
+        android:layout_width="80dp"
+        android:layout_height="60dp"
+        android:layout_alignParentStart="true"
+        android:cropToPadding="true"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="10dp"/>
+
+    <TextView
+        android:id="@+id/list_code_text"
+        android:layout_width="80dp"
+        android:layout_height="30dp"
+        android:textSize="25dp"
+        android:layout_toEndOf="@+id/list_flag"
+        android:text="CAN"
+        android:layout_marginStart="5dp"
+        />
+
+    <TextView
+        android:id="@+id/list_name"
+        android:layout_width="150dp"
+        android:layout_height="30dp"
+        android:textSize="13dp"
+        android:layout_toEndOf="@+id/list_flag"
+        android:layout_alignParentBottom="true"
+        android:text="canadian dollar"
+        android:gravity="center_vertical"
+        android:layout_marginStart="5dp"
+        />
+    
+    <TextView
+        android:id="@+id/list_value"
+        android:text="$12313"
+        android:textSize="23dp"
+        android:layout_width="200dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:textAlignment="textEnd"
+        android:layout_marginEnd="5dp"/>
+
+    <TextView
+        android:id="@+id/list_conversion"
+        android:layout_width="150dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:text="1 EUR = 0.234 USD"
+        android:textSize="13dp"
+        android:gravity="center|right"
+        android:layout_marginEnd="5dp"
+        />
+</RelativeLayout>

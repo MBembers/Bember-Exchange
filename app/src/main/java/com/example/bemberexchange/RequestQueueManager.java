@@ -3,6 +3,7 @@ package com.example.bemberexchange;
 import android.content.Context;
 
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -17,6 +18,9 @@ public class RequestQueueManager {
 
     public void addToRequestQueue(JsonObjectRequest jsonObjectRequest){
         queue.add(jsonObjectRequest);
+    }
+    public void addToRequestQueue(ImageRequest imageRequest){
+        queue.add(imageRequest);
     }
 
     public static RequestQueueManager getInstance(Context _context) {
