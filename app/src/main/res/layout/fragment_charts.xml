@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".ui.charts.ChartsFragment">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,10 +24,74 @@
                 android:layout_weight="10"/>
         </LinearLayout>
 
-        <com.anychart.AnyChartView
-            android:id="@+id/any_chart_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+    <Button
+        android:id="@+id/btn_change_chart_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Switch chart" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal">
+
+
+        <Button
+            android:id="@+id/btn7day"
+            android:backgroundTint="@color/white"
+            android:textColor="?android:colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="7D" />
+
+        <Button
+            android:id="@+id/btn14day"
+            android:backgroundTint="@color/white"
+            android:textColor="?android:colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="14D" />
+
+        <Button
+            android:id="@+id/btn1month"
+            android:backgroundTint="@color/white"
+            android:textColor="?android:colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="1M" />
+
+        <Button
+            android:id="@+id/btn3month"
+            android:backgroundTint="@color/white"
+            android:textColor="?android:colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="3M" />
+
+        <Button
+            android:id="@+id/btn6month"
+            android:backgroundTint="@color/white"
+            android:textColor="?android:colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="6M" />
+
+        <Button
+            android:id="@+id/btn1year"
+            android:backgroundTint="@color/white"
+            android:textColor="?android:colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="1Y" />
     </LinearLayout>
-</RelativeLayout>
+
+
+
+</LinearLayout>

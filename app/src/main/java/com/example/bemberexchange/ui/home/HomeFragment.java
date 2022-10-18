@@ -1,5 +1,7 @@
 package com.example.bemberexchange.ui.home;
 
+import static com.example.bemberexchange.Helpers.countryCodeToEmoji;
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -92,7 +94,6 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                Log.d("XXX", "afterTextChanged: " + editable.toString());
                 if(editable.toString().equals("")){
                     selectedValue = 1;
                 }
@@ -127,14 +128,12 @@ public class HomeFragment extends Fragment {
 
     private void addToAdapter(int i){
         String code = codes.get(i);
-        Log.d("XXX", "addToAdapter: " + code);
         String url = String.format("https://v6.exchangerate-api.com/v6/a2839df23860276ae274e3a8/enriched/%s/%s", selectedCode, code);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            Log.d("XXX", "onResponse: fetching for add" + code);
                             JSONObject targetData = response.getJSONObject("target_data");
                             String symbol = (String) targetData.get("display_symbol");
                             String flagUrl = (String) targetData.get("flag_url");
@@ -213,7 +212,6 @@ public class HomeFragment extends Fragment {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            Log.d("XXX", "onResponse: fetching for selected");
                             String symbol = (String) response.getJSONObject("target_data").get("display_symbol");
                             String flagUrl = (String) response.getJSONObject("target_data").get("flag_url");
                             StringBuilder builder = new StringBuilder();
@@ -332,24 +330,5 @@ public class HomeFragment extends Fragment {
         binding = null;
     }
 
-    public String countryCodeToEmoji(String code) {
 
-        // offset between uppercase ascii and regional indicator symbols
-        int OFFSET = 127397;
-
-        code = code.substring(0, 2);
-
-        // convert code to uppercase
-        code = code.toUpperCase();
-
-        StringBuilder emojiStr = new StringBuilder();
-
-        //loop all characters
-        for (int i = 0; i < code.length(); i++) {
-            emojiStr.appendCodePoint(code.charAt(i) + OFFSET);
-        }
-
-        // return emoji
-        return emojiStr.toString();
-    }
 }

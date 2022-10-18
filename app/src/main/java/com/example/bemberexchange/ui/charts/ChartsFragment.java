@@ -1,150 +1,330 @@
 package com.example.bemberexchange.ui.charts;
 
+import static com.example.bemberexchange.Helpers.countryCodeToEmoji;
+
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.anychart.AnyChart;
-import com.anychart.AnyChartView;
-import com.anychart.chart.common.dataentry.DataEntry;
-import com.anychart.chart.common.dataentry.ValueDataEntry;
-import com.anychart.charts.Cartesian;
-import com.anychart.charts.Pie;
-import com.anychart.core.cartesian.series.Line;
-import com.anychart.data.Mapping;
-import com.anychart.data.Set;
-import com.anychart.enums.Anchor;
-import com.anychart.enums.MarkerType;
-import com.anychart.enums.TooltipPositionMode;
-import com.anychart.graphics.vector.Stroke;
-import com.example.bemberexchange.databinding.FragmentChartsBinding;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.bemberexchange.R;
+import com.example.bemberexchange.RequestQueueManager;
+import com.example.bemberexchange.databinding.FragmentChartsBinding;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.ValueFormatter;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 public class ChartsFragment extends Fragment {
 
     private FragmentChartsBinding binding;
+    private LinearLayout root;
+    private String chartType = "Bar";
+    private BarChart barChart;
+    private LineChart lineChart;
+    private JSONObject symbols;
+    private ArrayList<String> codes;
+    private String mainCurrencyCode;
+    private String compareCurrencyCode;
+    private Date startDate;
+    private Date endDate;
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
         binding = FragmentChartsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        root = binding.getRoot();
 
-        AnyChartView anyChartView = binding.anyChartView;
-//        anyChartView.setProgressBar(findViewById(R.id.progress_bar));
+        codes = new ArrayList<String>();
 
-        Cartesian cartesian = AnyChart.line();
+        barChart = new BarChart(getContext());
+        barChart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        lineChart = new LineChart(getContext());
+        lineChart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
 
-        cartesian.animation(true);
 
-        cartesian.padding(10d, 20d, 5d, 20d);
+        binding.btnChangeChartType.setOnClickListener(view -> switchChartType());
+        binding.btn7day.setOnClickListener(view -> changeTimeFrame("7day"));
+        binding.btn14day.setOnClickListener(view -> changeTimeFrame("14day"));
+        binding.btn1month.setOnClickListener(view -> changeTimeFrame("1month"));
+        binding.btn3month.setOnClickListener(view -> changeTimeFrame("3month"));
+        binding.btn6month.setOnClickListener(view -> changeTimeFrame("6month"));
+        binding.btn1year.setOnClickListener(view -> changeTimeFrame("1year"));
 
-        cartesian.crosshair().enabled(true);
-        cartesian.crosshair()
-                .yLabel(true)
-                // TODO ystroke
-                .yStroke((Stroke) null, null, null, (String) null, (String) null);
+        getCurrencies();
 
-        cartesian.tooltip().positionMode(TooltipPositionMode.POINT);
+        binding.mainCurrencySpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectCurrency("main", i);
+            }
 
-        cartesian.title("Trend of Sales of the Most Popular Products of ACME Corp.");
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
-        cartesian.yAxis(0).title("Number of Bottles Sold (thousands)");
-        cartesian.xAxis(0).labels().padding(5d, 5d, 5d, 5d);
+            }
+        });
 
-        List<DataEntry> seriesData = new ArrayList<>();
-        seriesData.add(new CustomDataEntry("1986", 3.6, 2.3, 2.8));
-        seriesData.add(new CustomDataEntry("1987", 7.1, 4.0, 4.1));
-        seriesData.add(new CustomDataEntry("1988", 8.5, 6.2, 5.1));
-        seriesData.add(new CustomDataEntry("1989", 9.2, 11.8, 6.5));
-        seriesData.add(new CustomDataEntry("1990", 10.1, 13.0, 12.5));
-        seriesData.add(new CustomDataEntry("1991", 11.6, 13.9, 18.0));
-        seriesData.add(new CustomDataEntry("1992", 16.4, 18.0, 21.0));
-        seriesData.add(new CustomDataEntry("1993", 18.0, 23.3, 20.3));
-        seriesData.add(new CustomDataEntry("1994", 13.2, 24.7, 19.2));
-        seriesData.add(new CustomDataEntry("1995", 12.0, 18.0, 14.4));
-        seriesData.add(new CustomDataEntry("1996", 3.2, 15.1, 9.2));
-        seriesData.add(new CustomDataEntry("1997", 4.1, 11.3, 5.9));
-        seriesData.add(new CustomDataEntry("1998", 6.3, 14.2, 5.2));
-        seriesData.add(new CustomDataEntry("1999", 9.4, 13.7, 4.7));
-        seriesData.add(new CustomDataEntry("2000", 11.5, 9.9, 4.2));
-        seriesData.add(new CustomDataEntry("2001", 13.5, 12.1, 1.2));
-        seriesData.add(new CustomDataEntry("2002", 14.8, 13.5, 5.4));
-        seriesData.add(new CustomDataEntry("2003", 16.6, 15.1, 6.3));
-        seriesData.add(new CustomDataEntry("2004", 18.1, 17.9, 8.9));
-        seriesData.add(new CustomDataEntry("2005", 17.0, 18.9, 10.1));
-        seriesData.add(new CustomDataEntry("2006", 16.6, 20.3, 11.5));
-        seriesData.add(new CustomDataEntry("2007", 14.1, 20.7, 12.2));
-        seriesData.add(new CustomDataEntry("2008", 15.7, 21.6, 10));
-        seriesData.add(new CustomDataEntry("2009", 12.0, 22.5, 8.9));
+        binding.compareCurrencySpinner.setOnItemSelectedListener(
+                new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectCurrency("compare", i);
+            }
 
-        Set set = Set.instantiate();
-        set.data(seriesData);
-        Mapping series1Mapping = set.mapAs("{ x: 'x', value: 'value' }");
-        Mapping series2Mapping = set.mapAs("{ x: 'x', value: 'value2' }");
-        Mapping series3Mapping = set.mapAs("{ x: 'x', value: 'value3' }");
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
-        Line series1 = cartesian.line(series1Mapping);
-        series1.name("Brandy");
-        series1.hovered().markers().enabled(true);
-        series1.hovered().markers()
-                .type(MarkerType.CIRCLE)
-                .size(4d);
-        series1.tooltip()
-                .position("right")
-                .anchor(Anchor.LEFT_CENTER)
-                .offsetX(5d)
-                .offsetY(5d);
-
-        Line series2 = cartesian.line(series2Mapping);
-        series2.name("Whiskey");
-        series2.hovered().markers().enabled(true);
-        series2.hovered().markers()
-                .type(MarkerType.CIRCLE)
-                .size(4d);
-        series2.tooltip()
-                .position("right")
-                .anchor(Anchor.LEFT_CENTER)
-                .offsetX(5d)
-                .offsetY(5d);
-
-        Line series3 = cartesian.line(series3Mapping);
-        series3.name("Tequila");
-        series3.hovered().markers().enabled(true);
-        series3.hovered().markers()
-                .type(MarkerType.CIRCLE)
-                .size(4d);
-        series3.tooltip()
-                .position("right")
-                .anchor(Anchor.LEFT_CENTER)
-                .offsetX(5d)
-                .offsetY(5d);
-
-        cartesian.legend().enabled(true);
-        cartesian.legend().fontSize(13d);
-        cartesian.legend().padding(0d, 0d, 10d, 0d);
-
-        anyChartView.setChart(cartesian);
-        Log.d("XXX", "onCreateView: sussy");
-
+            }
+        });
+        changeTimeFrame("14day");
+        switchChartType();
         return root;
     }
-    private class CustomDataEntry extends ValueDataEntry {
 
-        CustomDataEntry(String x, Number value, Number value2, Number value3) {
-            super(x, value);
-            setValue("value2", value2);
-            setValue("value3", value3);
+
+
+    private void changeTimeFrame(String timeFrame){
+        endDate = Calendar.getInstance().getTime();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(endDate);
+        switch (timeFrame){
+            case "7day":
+                calendar.add(Calendar.DATE, -7);
+                startDate = calendar.getTime();
+                break;
+            case "14day":
+                calendar.add(Calendar.DATE, -14);
+                startDate = calendar.getTime();
+                break;
+            case "1month":
+                calendar.add(Calendar.MONTH, -1);
+                startDate = calendar.getTime();
+                break;
+            case "3month":
+                calendar.add(Calendar.MONTH, -3);
+                startDate = calendar.getTime();
+                break;
+            case "6month":
+                calendar.add(Calendar.MONTH, -6);
+                startDate = calendar.getTime();
+                break;
+            case "1year":
+                calendar.add(Calendar.YEAR, -1);
+                startDate = calendar.getTime();
+                break;
+        }
+        refreshChart();
+    }
+
+    private void refreshChart(){
+        if(mainCurrencyCode == null || compareCurrencyCode == null) return;
+        String url = String.format(
+                "https://api.exchangerate.host/timeseries?start_date=%s&end_date=%s&symbols=%s&base=%s",
+                 dateFormat.format(startDate), dateFormat.format(endDate),
+                 compareCurrencyCode, mainCurrencyCode
+        );
+        Log.d("XXX", url);
+        Log.d("XXX", "refreshChart: " + mainCurrencyCode + " | " + compareCurrencyCode);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Log.d("XXX", "onResponse: " + response.toString().substring(0, 500));
+                            JSONObject rates = response.getJSONObject("rates");
+                            applyData(rates);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO: Handle error
+
+                    }
+                });
+        RequestQueueManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+    }
+
+    private void applyData(JSONObject rates) {
+        ArrayList<MyDataObject> dataObjects = new ArrayList<>();
+        Iterator<String> keys = rates.keys();
+
+        ArrayList<String> labels = new ArrayList<>();
+        int i = 0;
+        while(keys.hasNext()){
+            String dateString = keys.next();
+            labels.add(dateString);
+
+            try {
+                JSONObject rate = rates.getJSONObject(dateString);
+                double compareRate = rate.getDouble(compareCurrencyCode);
+                dataObjects.add(new MyDataObject(i, compareRate));
+            }
+            catch (JSONException e){
+                Toast.makeText(getContext(), "We don't support this currency", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+
+
+            i++;
         }
 
+        ValueFormatter formatter = new ValueFormatter() {
+            @Override
+            public String getAxisLabel(float value, AxisBase axis) {
+                return labels.get((int) value);
+            }
+        };
+
+        switch (chartType){
+            case "Line":
+                List<Entry> lineEntries = new ArrayList<>();
+                for (MyDataObject data : dataObjects) {
+                    lineEntries.add(new Entry(data.x, (float) data.y));
+                }
+
+                LineDataSet lineDataSet = new LineDataSet(lineEntries, "Line chart"); // add entries to dataset
+                lineDataSet.setColor(R.color.black);
+                lineDataSet.setValueTextColor(R.color.black); // styling, ...
+
+                LineData lineData = new LineData(lineDataSet);
+                lineChart.setData(lineData);
+                XAxis lineChartXAxis = lineChart.getXAxis();
+                lineChartXAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+                lineChartXAxis.setValueFormatter(formatter);
+                lineChart.invalidate(); // refresh
+                break;
+            case "Bar":
+                List<BarEntry> barEntries = new ArrayList<>();
+                for (MyDataObject data : dataObjects) {
+                    // turn your data into Entry objects
+                    barEntries.add(new BarEntry(data.x, (float) data.y));
+                }
+
+                BarDataSet barDataSet = new BarDataSet(barEntries, "Bar chart"); // add entries to dataset
+                barDataSet.setColor(R.color.black);
+                barDataSet.setValueTextColor(R.color.black); // styling, ...
+
+                BarData barData = new BarData(barDataSet);
+                barChart.setData(barData);
+                XAxis barChartXAxis = barChart.getXAxis();
+                barChartXAxis.setGranularity(1f); // minimum axis-step (interval) is 1
+                barChartXAxis.setValueFormatter(formatter);
+                barChart.invalidate();
+                break;
+        }
     }
+
+    private class MyDataObject {
+            public int x;
+            public double y;
+            MyDataObject(int x, double y){
+                this.x = x;
+                this.y = y;
+            }
+    }
+
+    private void selectCurrency(String currencyType, int i){
+        switch (currencyType){
+            case "main":
+                mainCurrencyCode = codes.get(i);
+                break;
+            case "compare":
+                compareCurrencyCode = codes.get(i);
+                break;
+        }
+        refreshChart();
+    }
+
+    private void switchChartType(){
+        switch (chartType){
+            case "Line":
+                chartType = "Bar";
+                root.removeView(lineChart);
+                root.addView(barChart);
+                break;
+            case "Bar":
+                chartType = "Line";
+                root.removeView(barChart);
+                root.addView(lineChart);
+                break;
+        }
+        refreshChart();
+    }
+
+    private void getCurrencies(){
+        String url = "https://api.exchangerate.host/symbols";
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            symbols = response.getJSONObject("symbols");
+                            symbols.keys().forEachRemaining(codes::add);
+                            codes.remove("BTC");
+                            ArrayList<String> spinnerList = new ArrayList<>();
+                            for (String code: codes) {
+                                spinnerList.add(countryCodeToEmoji(code) + " " + code);
+                            }
+                            ArrayAdapter<String> codesSpinnerAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, spinnerList);
+                            binding.mainCurrencySpinner.setAdapter(codesSpinnerAdapter);
+                            binding.compareCurrencySpinner.setAdapter(codesSpinnerAdapter);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // TODO: Handle error
+
+                    }
+                });
+        RequestQueueManager.getInstance(getContext()).addToRequestQueue(jsonObjectRequest);
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
